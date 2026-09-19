@@ -17,6 +17,18 @@ try{
 const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8"};
 
 const server=http.createServer(async(req,res)=>{
+ if(req.url==="/api/dataset"){
+   try{
+     const base=join(root,"experiments","resume","fixtures");
+     const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));
+     const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));
+     res.writeHead(200,{"content-type":"application/json"});
+     return res.end(JSON.stringify({candidates}));
+   }catch(error){
+     res.writeHead(500,{"content-type":"application/json"});
+     return res.end(JSON.stringify({error:"Could not load dataset"}));
+   }
+ }
  if(req.url==="/api/status"){
    res.writeHead(200,{"content-type":"application/json"});
    return res.end(JSON.stringify({ok:true,typesafeKeyConfigured:Boolean(process.env.TYPESAFE_API_KEY),openaiKeyConfigured:Boolean(process.env.OPENAI_API_KEY),openrouterKeyConfigured:Boolean(process.env.OPENROUTER_API_KEY)}));
