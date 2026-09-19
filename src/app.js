@@ -62,6 +62,10 @@ function updateRun(id,patch){const runs=loadHistory(),i=runs.findIndex(r=>r.id==
 function saveEvaluation(runId,candidateId,provider,result,extra={}){const run=loadHistory().find(r=>r.id===runId);if(!run)return;const results={...(run.results||{})};results[candidateId]={...(results[candidateId]||{}),[provider]:result};updateRun(runId,{results,...extra});}
 async function runPool(jobs,limit,fn){let next=0;async function worker(){while(true){const i=next++;if(i>=jobs.length)return;await fn(jobs[i],i)}}await Promise.all(Array.from({length:Math.min(limit,jobs.length)},worker))}
 
+function downloadJson(filename,data){const blob=new Blob([JSON.stringify(data,null,2)+"\n"],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),0)}
+function exportName(prefix,run){const stamp=new Date(run?.createdAt||Date.now()).toISOString().replace(/[:.]/g,"-");return `${prefix}-${stamp}.json`}
+document.querySelector("#exportRun").onclick=()=>{if(!hydratedRun){notice.classList.remove("hidden");notice.textContent="Select a saved run from History first.";return}downloadJson(exportName("jev-run",hydratedRun),hydratedRun)};
+document.querySelector("#exportAll").onclick=()=>{const runs=loadHistory();if(!runs.length){notice.classList.remove("hidden");notice.textContent="No saved runs to export.";return}downloadJson(exportName("jev-runs",runs[0]),{exportedAt:new Date().toISOString(),runs})};
 document.querySelector("#clearHistory").onclick=()=>{if(running)return;localStorage.removeItem(storageKey);newRun()};
 document.querySelector("#newRun").onclick=newRun;
 const drawer=document.querySelector("#historyDrawer"),backdrop=document.querySelector("#historyBackdrop");
