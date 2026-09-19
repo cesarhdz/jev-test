@@ -1,0 +1,74 @@
+{
+  "hands_on_engineering": {
+    "type": "score",
+    "instructions": "Evaluate demonstrated hands-on software engineering. Use evidence of personally designing, building, testing, debugging, or shipping production software. Do not infer engineering ability from titles or skills lists.",
+    "criteria": [
+      "No demonstrated coding experience",
+      "Technical collaboration but little evidence of personally building software",
+      "Has personally shipped scoped production features",
+      "Can independently design and build production features end to end",
+      "Can own systems, architecture, integrations, data models, and production tradeoffs",
+      "Deep engineering specialist with substantial systems-level or organization-wide technical ownership"
+    ]
+  },
+  "product_ownership": {
+    "type": "score",
+    "instructions": "Evaluate demonstrated ownership from problem definition through delivery and outcomes. Prioritize concrete evidence over job titles.",
+    "criteria": [
+      "No product ownership",
+      "Executes predefined requirements",
+      "Owns scoped features",
+      "Owns meaningful product areas from discovery through delivery",
+      "Owns strategy, technical tradeoffs, metrics, and multiple product areas or teams",
+      "Organization-level product leadership with repeated major business outcomes"
+    ]
+  },
+  "payments_depth": {
+    "type": "score",
+    "instructions": "Evaluate demonstrated payments domain depth using actual systems and workflows owned.",
+    "criteria": [
+      "No payments experience",
+      "Basic payment integration experience",
+      "Experience with payment providers or transaction workflows",
+      "Owns multiple payment workflows such as reconciliation, payouts, fees, or settlement",
+      "Deep ownership of international payment infrastructure, reconciliation, settlement, FX, wallets, and operational workflows",
+      "Payments infrastructure specialist operating at major financial-platform scale"
+    ]
+  },
+  "ai_product_engineering": {
+    "type": "score",
+    "instructions": "Evaluate practical experience using AI or LLM systems to build production software. Distinguish ordinary AI tool usage from designing agentic workflows, evaluations, guardrails, or AI-powered products.",
+    "criteria": [
+      "No demonstrated AI experience",
+      "Uses AI productivity tools",
+      "Has built software using LLM APIs or coding agents",
+      "Has shipped production workflows using LLMs or agents",
+      "Designs agentic workflows, evaluations, testing, guardrails, and production integration",
+      "Deep AI/ML engineering including model training, serving, or advanced agent infrastructure"
+    ]
+  },
+  "product_engineer_fit": {
+    "type": "score",
+    "instructions": "Evaluate evidence that the candidate can independently move between product discovery, technical design, implementation, shipping, and iteration. Do not reward titles. Require evidence from experience bullets.",
+    "criteria": [
+      "No fit",
+      "Primarily product or engineering with little crossover",
+      "Some meaningful crossover between product and engineering",
+      "Strong hybrid profile with end-to-end ownership",
+      "Repeated evidence of independently moving from ambiguous product problems to shipped technical solutions",
+      "Exceptional repeated product-engineering ownership at significant scale"
+    ]
+  },
+  "primary_profile": {
+    "type": "choice",
+    "instructions": "Select the profile best supported by demonstrated work, weighting recent experience most heavily.",
+    "criteria": {
+      "product_manager": "Primarily defines product direction and coordinates delivery.",
+      "technical_product_manager": "Product ownership with substantial technical architecture, API, data, or platform depth.",
+      "product_engineer": "Personally moves between product definition and hands-on implementation.",
+      "software_engineer": "Primarily owns implementation and technical systems.",
+      "forward_deployed_engineer": "Combines engineering with direct customer or stakeholder problem solving and deployment.",
+      "other": "None of the profiles clearly dominate."
+    }
+  }
+}
