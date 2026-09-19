@@ -1,15 +1,19 @@
-# Resume sensitivity experiment
+# Experiment 01 — Resume decisions
 
-Freeze `rubric.json` during the first experiment.
+Compare structured decisions from multiple models over a small, varied synthetic resume dataset.
 
-Run every fixture repeatedly against the same rubric. Start with 10 runs per model.
+## Dataset
 
-| Case | Expected directional change |
-| --- | --- |
-| baseline | Reference |
-| no-payments | `payments_depth` collapses |
-| no-ai | `ai_product_engineering` collapses |
-| no-hands-on | `hands_on_engineering` and `product_engineer_fit` fall |
-| pm-titles | Engineering evidence and PE fit remain close to baseline |
+`fixtures/` contains 12 synthetic resumes as Markdown. They vary by seniority, role shape, engineering depth, product ownership, customer exposure, and practical LLM experience.
 
-Do not tune the rubric after seeing individual outputs. Version the rubric if we intentionally change it.
+`manifest.json` contains display metadata for the UI. The Markdown file is the actual model input and human-readable source of truth.
+
+## Decisions
+
+Every resume uses the same frozen `rubric.json`:
+
+- `technical_depth` — Score 0–5
+- `primary_profile` — Choice
+- `llm_experience` — Noul
+
+The same resume and rubric must be sent to every selected model. Runs are persisted locally by the browser so historical comparisons can be hydrated later.
