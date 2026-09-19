@@ -71,6 +71,18 @@
       "file": "12-operations-pm.md",
       "title": "Operations PM",
       "description": "Product Manager, Operations · Chicago, USA"
+    },
+    {
+      "id": "c13",
+      "file": "13-spanish-product-engineer.md",
+      "title": "Product engineer (ES)",
+      "description": "Ingeniera de Producto Senior · Madrid, España"
+    },
+    {
+      "id": "c14",
+      "file": "14-german-technical-pm.md",
+      "title": "Technical PM (DE)",
+      "description": "Technischer Produktmanager · Hamburg, Deutschland"
     }
   ]
 }
