@@ -94,7 +94,7 @@ async function mapLimit(items,limit,fn){
 
 const server=http.createServer(async(req,res)=>{
  const path=req.url?.split("?")[0];
- if(path==="/api/dataset"){try{const base=join(root,"experiments","resume","fixtures");const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));return json(res,200,{candidates})}catch(error){return json(res,500,{error:error.message})}}
+ if(path==="/api/dataset"){try{const base=join(root,"experiments","resume","fixtures");const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));return json(res,200,{candidates,rubric:await rubric()})}catch(error){return json(res,500,{error:error.message})}}
  if(path==="/api/config")return json(res,200,config);
  if(path==="/api/status")return json(res,200,{ok:true,providers:Object.fromEntries(config.providers.map(p=>[p.id,p.configured]))});
  if(path==="/api/evaluate"&&req.method==="POST"){
