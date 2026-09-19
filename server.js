@@ -60,20 +60,20 @@ function extractResponseText(data){
 }
 async function callJev(resume,r){
  const started=performance.now();
- const response=await fetch("https://api.typesafe.ai/v1/systemone",{method:"POST",headers:{"authorization":`Bearer ${process.env.TYPESAFE_API_KEY}`,"content-type":"application/json"},body:JSON.stringify({model:config.providers.find(p=>p.id==="jev").model,state:resume,questions:jevQuestions(r)})});
+ const response=await fetch("https://api.typesafe.ai/v1/systemone",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.TYPESAFE_API_KEY}`,"content-type":"application/json"},body:JSON.stringify({model:config.providers.find(p=>p.id==="jev").model,state:resume,questions:jevQuestions(r)})});
  const text=await response.text();if(!response.ok)throw new Error(`TypeSafe ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text);return {...normalizeJev(data),latencyMs:Math.round(performance.now()-started)};
 }
 async function callOpenAI(resume,r){
  const started=performance.now(),model=config.providers.find(p=>p.id==="openai").model;
- const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"authorization":`Bearer ${process.env.OPENAI_API_KEY}`,"content-type":"application/json"},body:JSON.stringify({model,store:false,input:promptFor(resume,r),text:{format:{type:"json_schema",name:"resume_decisions",strict:true,schema:llmSchema}}})});
+ const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENAI_API_KEY}`,"content-type":"application/json"},body:JSON.stringify({model,store:false,input:promptFor(resume,r),text:{format:{type:"json_schema",name:"resume_decisions",strict:true,schema:llmSchema}}})});
  const text=await response.text();if(!response.ok)throw new Error(`OpenAI ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text),parsed=JSON.parse(extractResponseText(data));
  return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.input_tokens??null,outputTokens:data.usage?.output_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
 }
 async function callOpenRouter(resume,r){
  const started=performance.now(),model=config.providers.find(p=>p.id==="openrouter").model;
- const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
+ const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
  const text=await response.text();if(!response.ok)throw new Error(`OpenRouter ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text),parsed=JSON.parse(data.choices?.[0]?.message?.content||"{}");
  return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.prompt_tokens??null,outputTokens:data.usage?.completion_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
@@ -97,6 +97,20 @@ const server=http.createServer(async(req,res)=>{
  if(path==="/api/dataset"){try{const base=join(root,"experiments","resume","fixtures");const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));return json(res,200,{candidates})}catch(error){return json(res,500,{error:error.message})}}
  if(path==="/api/config")return json(res,200,config);
  if(path==="/api/status")return json(res,200,{ok:true,providers:Object.fromEntries(config.providers.map(p=>[p.id,p.configured]))});
+ if(path==="/api/evaluate"&&req.method==="POST"){
+   try{
+    const payload=await body(req),provider=payload.provider,candidate=payload.candidate;
+    const p=config.providers.find(x=>x.id===provider);
+    if(!p)return json(res,400,{error:"Unknown provider."});
+    if(!p.configured)return json(res,400,{error:`Missing credentials for: ${provider}`});
+    if(!candidate?.id||typeof candidate.markdown!=="string")return json(res,400,{error:"Candidate id and markdown are required."});
+    const r=await rubric();
+    console.log(`[eval:start] ${candidate.id} · ${provider} · ${p.model}`);
+    const result=await evaluate(provider,candidate.markdown,r);
+    console.log(`[eval:${result.error?"error":"done"}] ${candidate.id} · ${provider}${result.latencyMs!=null?` · ${result.latencyMs}ms`:""}${result.error?` · ${result.error}`:""}`);
+    return json(res,200,{candidateId:candidate.id,provider,result,rubric:r,model:p.model});
+   }catch(error){console.error("[eval:fatal]",error);return json(res,500,{error:error.message})}
+ }
  if(path==="/api/run"&&req.method==="POST"){
    try{
     const payload=await body(req),providers=Array.isArray(payload.providers)?payload.providers:[],candidates=Array.isArray(payload.candidates)?payload.candidates:[];
