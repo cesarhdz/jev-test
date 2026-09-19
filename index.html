@@ -1,35 +1,25 @@
 <!doctype html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jev Lab</title><link rel="stylesheet" href="/src/style.css"></head>
 <body><main>
-<header><div><span class="eyebrow">STRUCTURED DECISION LAB</span><h1>Decision model comparison</h1><p>One varied resume dataset, the same typed decisions, multiple models. Inspect outputs, probabilities, latency and token usage side by side.</p></div><div class="badge">Experiment 01</div></header>
-
+<header><div><span class="eyebrow">STRUCTURED DECISION LAB</span><h1>Decision model comparison</h1><p>One varied resume dataset, the same typed decisions, multiple models. Compare outputs side by side and keep every run for later analysis.</p></div><div class="badge">Experiment 01</div></header>
 <section class="panel setup">
  <div class="panelHead"><div><span class="step">01</span><h2>Experiment</h2></div><button id="advancedToggle" class="link">Configuration</button></div>
  <div class="experimentLine"><div><strong>12 synthetic candidates</strong><span>Varied seniority, engineering depth, product ownership and AI experience</span></div><div><strong>3 decisions each</strong><span>Score · Choice · Noul</span></div><div><strong id="modelSummary">2 models</strong><span id="evalSummary">24 evaluations</span></div></div>
- <div id="advanced" class="advanced hidden">
-   <div class="modelGrid">
-    <label class="model"><input type="checkbox" data-provider="jev" checked><span><b>TypeSafe</b><strong>Jev 1.13</strong><small>TYPESAFE_API_KEY</small></span></label>
-    <label class="model"><input type="checkbox" data-provider="openai" checked><span><b>OpenAI</b><strong>GPT-5.6 Luna</strong><small>gpt-5.6-luna</small></span></label>
-    <label class="model"><input type="checkbox" data-provider="openrouter"><span><b>OpenRouter</b><strong>Free router</strong><small>openrouter/free</small></span></label>
-   </div>
- </div>
- <button id="run" class="run">Run dataset <span>→</span></button>
- <p id="notice" class="notice hidden"></p>
+ <div id="advanced" class="advanced hidden"><div class="modelGrid">
+  <label class="model"><input type="checkbox" data-provider="jev" checked><span><b>TypeSafe</b><strong>Jev 1.13</strong><small>TYPESAFE_API_KEY</small></span></label>
+  <label class="model"><input type="checkbox" data-provider="openai" checked><span><b>OpenAI</b><strong>GPT-5.6 Luna</strong><small>gpt-5.6-luna</small></span></label>
+  <label class="model"><input type="checkbox" data-provider="openrouter"><span><b>OpenRouter</b><strong>Free router</strong><small>openrouter/free</small></span></label>
+ </div></div>
+ <button id="run" class="run">Run dataset <span>→</span></button><p id="notice" class="notice hidden"></p>
 </section>
-
 <section class="workspace">
  <aside class="panel candidates"><div class="panelHead"><div><span class="step">02</span><h2>Dataset</h2></div><span class="muted">12</span></div><div id="candidateList"></div></aside>
  <section class="panel inspector">
-   <div class="panelHead"><div><span class="step">03</span><h2>Inspector</h2></div><span id="resultStatus" class="muted">Not run</span></div>
-   <div class="candidateHead"><div><span class="eyebrow">INPUT</span><h3 id="candidateName">Candidate 01</h3><p id="candidateDescription"></p></div><button id="viewInput" class="secondary">View resume</button></div>
-   <pre id="inputPreview" class="inputPreview hidden"></pre>
-   <div id="providerTabs" class="tabs"></div>
-   <div class="decisionGrid">
-    <article class="decision"><span class="type">SCORE</span><h4>technical_depth</h4><div class="placeholder">Run dataset to inspect score and probability distribution.</div></article>
-    <article class="decision"><span class="type">CHOICE</span><h4>primary_profile</h4><div class="placeholder">Compare category probabilities between models.</div></article>
-    <article class="decision"><span class="type">NOUL</span><h4>llm_experience</h4><div class="placeholder">Inspect true / false probability.</div></article>
-   </div>
-   <div class="metrics"><span>Latency <b>—</b></span><span>Input tokens <b>—</b></span><span>Output tokens <b>—</b></span><span>Model <b>—</b></span></div>
+  <div class="panelHead"><div><span class="step">03</span><h2>Compare</h2></div><span id="resultStatus" class="muted">Not run</span></div>
+  <div class="candidateHead"><div><span class="eyebrow">INPUT</span><h3 id="candidateName"></h3><p id="candidateDescription"></p></div><button id="viewInput" class="secondary">View resume</button></div>
+  <pre id="inputPreview" class="inputPreview hidden"></pre>
+  <div id="comparison" class="comparison"></div>
  </section>
 </section>
+<section class="panel history"><div class="panelHead"><div><span class="step">04</span><h2>Run history</h2></div><button id="clearHistory" class="link">Clear local history</button></div><div id="historyList" class="historyList"></div></section>
 </main><script type="module" src="/src/app.js"></script></body></html>
