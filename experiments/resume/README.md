@@ -17,7 +17,13 @@ Every resume uses the same frozen `rubric.json`:
 - `production_ai_ownership` — Noul
 - `recent_hands_on_engineering` — Noul
 
-The same resume and rubric must be sent to every selected generative/decision model. Jev additionally exposes its native uncertainty; comparison LLMs return only normalized typed decisions.
+The benchmark compares three different decision architectures:
+
+- TypeSafe Jev evaluates all four typed decisions in one System One request and exposes native uncertainty.
+- OpenAI Luna evaluates the full contract in one generative structured-output request.
+- Qwen3 Reranker 8B uses OpenRouter's rerank endpoint. Each decision is one rerank request: the resume + decision contract is the query and the valid answers are the documents. The four decision calls run in parallel. Relevance scores are preserved as model-native metadata and must not be interpreted as probabilities.
+
+The normalized final decisions remain comparable even though the underlying inference architecture differs.
 
 ## Human expected results
 
