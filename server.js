@@ -4,7 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root=fileURLToPath(new URL(".",import.meta.url));
-const defaults={TYPESAFE_MODEL:"jev-latest",OPENAI_MODEL:"gpt-5.6-luna",OPENROUTER_MODEL:"qwen/qwen3.8-27b:free"};
+const defaults={TYPESAFE_MODEL:"jev-latest",OPENAI_MODEL:"gpt-5.6-luna",OPENROUTER_MODEL:"google/gemma-4-26b-a4b-it:free"};
 try{
  const raw=await readFile(join(root,".env"),"utf8");
  for(const line of raw.split(/\r?\n/)){
@@ -73,8 +73,16 @@ async function callOpenAI(resume,r){
 }
 async function callOpenRouter(resume,r){
  const started=performance.now(),model=config.providers.find(p=>p.id==="openrouter").model;
- const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
- const text=await response.text();if(!response.ok)throw new Error(`OpenRouter ${response.status}: ${text.slice(0,400)}`);
+ let response,text;
+ const delays=[0,2000,5000,10000];
+ for(let attempt=0;attempt<delays.length;attempt++){
+   if(delays[attempt])await new Promise(resolve=>setTimeout(resolve,delays[attempt]));
+   response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
+   text=await response.text();
+   if(response.status!==429)break;
+   console.log(`[openrouter:retry] ${model} · attempt ${attempt+1}/${delays.length} · 429`);
+ }
+ if(!response.ok)throw new Error(`OpenRouter ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text),parsed=JSON.parse(data.choices?.[0]?.message?.content||"{}");
  return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.prompt_tokens??null,outputTokens:data.usage?.completion_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
 }
