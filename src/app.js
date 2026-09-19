@@ -26,6 +26,10 @@ function resultValue(key,d){
 }
 function distribution(key,d,rubric){
  if(!d)return '<div class="detailEmpty">No result</div>';
+ if(d.scores){
+   const rows=Object.entries(d.scores).sort((x,y)=>Number(y[1])-Number(x[1]));
+   return `<div class="distribution">${rows.map(([k,v])=>{const label=key==="technical_depth"?(rubric?.criteria?.[Number(k)]||`Level ${k}`):key==="primary_profile"?(rubric?.criteria?.[k]||titleize(k)):titleize(k);return `<div class="distRow"><span>${escapeHtml(label)}</span><b>${key==="technical_depth"?escapeHtml(k):""}</b><i><em style="width:${Math.max(0,Math.min(100,Number(v)*100))}%"></em></i><strong>${Number(v).toFixed(3)}</strong></div>`}).join("")}</div><div class="confidence">Reranker relevance scores · not probabilities</div>`;
+ }
  if(key==="technical_depth"&&d.probabilities){
    const probs=Array.isArray(d.probabilities)?d.probabilities:Object.values(d.probabilities);
    return `<div class="distribution">${probs.map((v,i)=>`<div class="distRow"><span>${escapeHtml(rubric?.criteria?.[i]||`Level ${i}`)}</span><b>${i}</b><i><em style="width:${Math.max(0,Math.min(100,Number(v)*100))}%"></em></i><strong>${pct(v)}</strong></div>`).join("")}</div>${d.confidence!=null?`<div class="confidence">Confidence: ${pct(d.confidence)}</div>`:""}`;
@@ -48,7 +52,7 @@ function renderComparison(){
    const details=providers.map(p=>{const saved=byProvider[p];return `<div class="modelDetail"><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong>${saved?.error?`<p class="providerError">${escapeHtml(saved.error)}</p>`:distribution(key,saved?.decisions?.[key],q)}</div>`}).join("");
    return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div>${details}</div></details>`;
  }).join("");
- const metrics=providers.map(p=>{const x=byProvider[p];return `<div class="metricCell"><b>${x?.latencyMs!=null?`${x.latencyMs} ms`:"—"}</b><span>${x?.inputTokens??"—"} in · ${x?.outputTokens??"—"} out</span></div>`}).join("");
+ const metrics=providers.map(p=>{const x=byProvider[p],extra=x?.calls?` · ${x.calls} calls`:"";return `<div class="metricCell"><b>${x?.latencyMs!=null?`${x.latencyMs} ms`:"—"}</b><span>${x?.inputTokens??"—"} in · ${x?.outputTokens??"—"} out${extra}</span></div>`}).join("");
  comparison.innerHTML=`<div class="compareTable" style="--models:${Math.max(1,providers.length)}"><div class="compareHeader"><div><span class="eyebrow">DECISION</span></div>${modelHeads}</div>${rows}<div class="compareMetrics"><div><span class="eyebrow">PERFORMANCE</span></div>${metrics}</div></div>`;
 }
 function renderCandidate(){const c=candidates.find(x=>x[0]===active);if(!c)return;name.textContent=c[1];desc.textContent=c[2];preview.innerHTML=markdownToHtml(hydratedRun?.inputs?.[active]||sampleResume(c));renderComparison()}
