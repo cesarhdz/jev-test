@@ -1,5 +1,33 @@
 <!doctype html>
 <html lang="en">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Jev Lab</title></head>
-  <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jev Lab</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<main>
+  <header><div><span class="eyebrow">STRUCTURED DECISION LAB</span><h1>Jev experiment runner</h1><p>Run controlled resume mutations against one frozen rubric. Compare sensitivity, invariance, stability and runtime.</p></div><div class="badge">Experiment 01</div></header>
+  <section class="grid">
+    <div class="panel">
+      <div class="panelHead"><div><span class="step">01</span><h2>Cases</h2></div><button id="toggleAll" class="link">Clear</button></div>
+      <div id="cases" class="cases"></div>
+    </div>
+    <div class="panel">
+      <div class="panelHead"><div><span class="step">02</span><h2>Run configuration</h2></div></div>
+      <label class="field">Provider<select id="provider"><option value="jev">TypeSafe · Jev 1.13</option><option disabled>OpenAI · coming next</option><option disabled>Anthropic · coming next</option></select></label>
+      <label class="field">Runs per case<div class="runrow"><input id="runs" type="range" min="1" max="30" value="10"><output id="runCount">10</output></div></label>
+      <div class="summary"><span>Cases <b id="caseCount">5</b></span><span>Total evaluations <b id="total">50</b></span><span>Rubric <b>6 decisions</b></span></div>
+      <button id="run" class="run">Run experiment <span>→</span></button>
+      <p id="notice" class="notice hidden"></p>
+    </div>
+  </section>
+  <section class="panel results">
+    <div class="panelHead"><div><span class="step">03</span><h2>Results</h2></div><span id="resultStatus" class="muted">Waiting for provider run</span></div>
+    <div id="empty" class="empty"><div class="pulse"></div><strong>No runs yet</strong><span>Results will compare score deltas, variance and latency by fixture.</span></div>
+  </section>
+</main>
+<script type="module" src="/src/app.js"></script>
+</body>
 </html>
