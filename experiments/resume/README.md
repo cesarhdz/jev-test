@@ -1,12 +1,12 @@
 # Experiment 01 — Resume decisions
 
-Compare structured decisions from multiple models over a small, varied synthetic resume dataset.
+Compare structured decisions from multiple models over a small, deliberately adversarial synthetic resume dataset.
 
 ## Dataset
 
-`fixtures/` contains 14 synthetic resumes as Markdown. They vary by seniority, role shape, engineering depth, product ownership, customer exposure, and practical LLM experience. The dataset also includes Spanish and German resumes to test whether the same English evaluation contract remains stable across input languages.
+`fixtures/manifest.json` selects 8 synthetic resumes from the fixture library. The active set emphasizes contrasting role shapes: backend specialist, AI product engineer, senior PM, technical PM, forward deployed engineer, ambiguous product/engineering hybrid, AI PM, and founder-builder.
 
-`manifest.json` contains display metadata for the UI. The Markdown file is the actual model input and human-readable source of truth.
+The Markdown file is the actual model input and human-readable source of truth.
 
 ## Decisions
 
@@ -14,6 +14,15 @@ Every resume uses the same frozen `rubric.json`:
 
 - `technical_depth` — Score 0–5
 - `primary_profile` — Choice
-- `llm_experience` — Noul
+- `production_ai_ownership` — Noul
+- `recent_hands_on_engineering` — Noul
 
-The same resume and rubric must be sent to every selected model. Runs are persisted locally by the browser so historical comparisons can be hydrated later.
+The same resume and rubric must be sent to every selected generative/decision model. Jev additionally exposes its native uncertainty; comparison LLMs return only normalized typed decisions.
+
+## Human expected results
+
+`expected.json` contains a draft human-reviewed answer key. Expected values are sets of acceptable outcomes rather than a single forced answer. It must be reviewed/frozen before it is used to score future runs.
+
+## Runs
+
+Runs are persisted in browser localStorage and can be exported as JSON from the History drawer. Exported raw runs can be committed under `results/` for reproducible analysis.
