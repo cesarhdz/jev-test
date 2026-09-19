@@ -1,6 +1,7 @@
 let candidates=[];
 let providerConfig=[];
 let rubricConfig={};
+let expectedConfig={};
 const labels={},storageKey="jev-lab:runs";
 const sampleResume=c=>c?.[3]||"";
 const escapeHtml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -42,18 +43,30 @@ function distribution(key,d,rubric){
  if((key==="production_ai_ownership"||key==="recent_hands_on_engineering")&&p!=null)return `<div class="distribution"><div class="distRow"><span>True</span><b></b><i><em style="width:${p*100}%"></em></i><strong>${pct(p)}</strong></div><div class="distRow"><span>False</span><b></b><i><em style="width:${(1-p)*100}%"></em></i><strong>${pct(1-p)}</strong></div></div>`;
  return '<div class="detailEmpty">This model returns only the normalized decision for this primitive.</div>';
 }
+function expectedValue(key){
+ const x=expectedConfig?.[active]?.[key]?.expected;
+ if(key==="technical_depth"&&Array.isArray(x))return `${x[0]}–${x[1]}`;
+ if(typeof x==="boolean")return x?"Yes":"No";
+ return titleize(x);
+}
+function matchesExpected(key,d){
+ const x=expectedConfig?.[active]?.[key]?.expected;if(x==null||!d)return null;
+ if(key==="technical_depth"){const n=Number(d.score);return Array.isArray(x)&&n>=x[0]&&n<=x[1]}
+ if(key==="primary_profile")return d.choice===x;
+ return d.value===x;
+}
 function renderComparison(){
  const providers=selectedProviders(),rubric=hydratedRun?.rubric||rubricConfig||{},byProvider=hydratedRun?.results?.[active]||{};
- const modelHeads=providers.map(p=>`<div class="compareModel"><span>${escapeHtml(providerConfig.find(x=>x.id===p)?.provider||p)}</span><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong></div>`).join("");
+ const modelHeads=`<div class="expectedHead"><span>HUMAN</span><strong>Expected</strong></div>`+providers.map(p=>`<div class="compareModel"><span>${escapeHtml(providerConfig.find(x=>x.id===p)?.provider||p)}</span><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong></div>`).join("");
  const keys=["technical_depth","primary_profile","production_ai_ownership","recent_hands_on_engineering"];
  const rows=keys.map((key,idx)=>{
    const q=rubric[key]||{},type=(q.type||["score","choice","noul","noul"][idx]).toUpperCase();
-   const cells=providers.map(p=>{const saved=byProvider[p];if(saved?.error)return `<div class="compareValue errorValue">Error</div>`;if(running&&!saved)return `<div class="compareValue muted">Running…</div>`;return `<div class="compareValue">${escapeHtml(resultValue(key,saved?.decisions?.[key]))}</div>`}).join("");
+   const expectedCell=`<div class="compareValue expectedValue">${escapeHtml(expectedValue(key))}</div>`;const cells=providers.map(p=>{const saved=byProvider[p];if(saved?.error)return `<div class="compareValue errorValue">Error</div>`;if(running&&!saved)return `<div class="compareValue muted">Running…</div>`;const d=saved?.decisions?.[key],match=matchesExpected(key,d),mark=match==null?"":`<span class="validationMark ${match?"match":"miss"}">${match?"✓":"·"}</span>`;return `<div class="compareValue"><span>${escapeHtml(resultValue(key,d))}</span>${mark}</div>`}).join("");
    const details=providers.map(p=>{const saved=byProvider[p];return `<div class="modelDetail"><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong>${saved?.error?`<p class="providerError">${escapeHtml(saved.error)}</p>`:distribution(key,saved?.decisions?.[key],q)}</div>`}).join("");
-   return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div>${details}</div></details>`;
+   return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${expectedCell}${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div><div class="expectedDetail"><span class="eyebrow">HUMAN EXPECTED</span><p>${escapeHtml(expectedValue(key))}</p></div>${details}</div></details>`;
  }).join("");
  const metrics=providers.map(p=>{const x=byProvider[p],extra=x?.calls?` · ${x.calls} calls`:"";return `<div class="metricCell"><b>${x?.latencyMs!=null?`${x.latencyMs} ms`:"—"}</b><span>${x?.inputTokens??"—"} in · ${x?.outputTokens??"—"} out${extra}</span></div>`}).join("");
- comparison.innerHTML=`<div class="compareTable" style="--models:${Math.max(1,providers.length)}"><div class="compareHeader"><div><span class="eyebrow">DECISION</span></div>${modelHeads}</div>${rows}<div class="compareMetrics"><div><span class="eyebrow">PERFORMANCE</span></div>${metrics}</div></div>`;
+ comparison.innerHTML=`<div class="compareTable" style="--models:${Math.max(1,providers.length)}"><div class="compareHeader"><div><span class="eyebrow">DECISION</span></div>${modelHeads}</div>${rows}<div class="compareMetrics"><div><span class="eyebrow">PERFORMANCE</span></div><div class="expectedMetric">—</div>${metrics}</div></div>`;
 }
 function renderCandidate(){const c=candidates.find(x=>x[0]===active);if(!c)return;name.textContent=c[1];desc.textContent=c[2];preview.innerHTML=markdownToHtml(hydratedRun?.inputs?.[active]||sampleResume(c));renderComparison()}
 function renderConfig(){const ps=selectedProviders();document.querySelector("#modelSummary").textContent=`${ps.length} selected`;renderCandidate()}
@@ -114,7 +127,7 @@ async function boot(){
   if(!dr.ok)throw new Error(`Dataset failed (${dr.status})`);
   if(!cr.ok)throw new Error(`Config failed (${cr.status})`);
   const d=await dr.json(),cfg=await cr.json();
-  providerConfig=cfg.providers||[];rubricConfig=d.rubric||{};
+  providerConfig=cfg.providers||[];rubricConfig=d.rubric||{};expectedConfig=d.expected||{};
   for(const p of providerConfig)labels[p.id]=p.model;
   document.querySelector("#modelGrid").innerHTML=providerConfig.map(p=>`<label class="model"><input type="checkbox" data-provider="${p.id}" checked><span><b>${p.provider}</b><strong>${p.model}</strong><small>${p.configured?"Credential configured":"Credential missing"}</small></span></label>`).join("");
   document.querySelectorAll("[data-provider]").forEach(x=>x.addEventListener("change",renderConfig));
