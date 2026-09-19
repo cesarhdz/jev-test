@@ -3,7 +3,8 @@
 <body><main>
 <header><div><span class="eyebrow">STRUCTURED DECISION LAB</span><h1>Decision model comparison</h1><p>One varied resume dataset, the same typed decisions, multiple models. Compare outputs side by side and keep every run for later analysis.</p></div><div class="badge">Experiment 01</div></header>
 <section class="panel setup">
- <div class="panelHead"><div><span class="step">01</span><h2>Experiment</h2></div><button id="advancedToggle" class="link">Configuration</button></div>
+ <div class="panelHead"><div><span class="step">01</span><h2>Experiment</h2></div><div class="headActions"><select id="runPicker" class="runPicker"><option value="">New run</option></select><button id="advancedToggle" class="link">Configuration</button></div></div>
+ <div id="hydratedBanner" class="hydratedBanner hidden"><span>Viewing saved run</span><strong id="hydratedLabel"></strong><button id="newRun" class="link">Back to new run</button></div>
  <div class="experimentLine"><div><strong>12 synthetic candidates</strong><span>Varied seniority, engineering depth, product ownership and AI experience</span></div><div><strong>3 decisions each</strong><span>Score · Choice · Noul</span></div><div><strong id="modelSummary">2 models</strong><span id="evalSummary">24 evaluations</span></div></div>
  <div id="advanced" class="advanced hidden"><div class="modelGrid">
   <label class="model"><input type="checkbox" data-provider="jev" checked><span><b>TypeSafe</b><strong>Jev 1.13</strong><small>TYPESAFE_API_KEY</small></span></label>
@@ -17,8 +18,7 @@
  <section class="panel inspector">
   <div class="panelHead"><div><span class="step">03</span><h2>Compare</h2></div><span id="resultStatus" class="muted">Not run</span></div>
   <div class="candidateHead"><div><span class="eyebrow">INPUT</span><h3 id="candidateName"></h3><p id="candidateDescription"></p></div><button id="viewInput" class="secondary">View resume</button></div>
-  <pre id="inputPreview" class="inputPreview hidden"></pre>
-  <div id="comparison" class="comparison"></div>
+  <pre id="inputPreview" class="inputPreview hidden"></pre><div id="comparison" class="comparison"></div>
  </section>
 </section>
 <section class="panel history"><div class="panelHead"><div><span class="step">04</span><h2>Run history</h2></div><button id="clearHistory" class="link">Clear local history</button></div><div id="historyList" class="historyList"></div></section>
