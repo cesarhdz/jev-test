@@ -19,7 +19,7 @@ const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=
 const server=http.createServer(async(req,res)=>{
  if(req.url==="/api/status"){
    res.writeHead(200,{"content-type":"application/json"});
-   return res.end(JSON.stringify({ok:true,typesafeKeyConfigured:Boolean(process.env.TYPESAFE_API_KEY)}));
+   return res.end(JSON.stringify({ok:true,typesafeKeyConfigured:Boolean(process.env.TYPESAFE_API_KEY),openaiKeyConfigured:Boolean(process.env.OPENAI_API_KEY),openrouterKeyConfigured:Boolean(process.env.OPENROUTER_API_KEY)}));
  }
 
  const pathname=req.url==="/"?"index.html":decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
