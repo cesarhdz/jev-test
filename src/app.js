@@ -1,5 +1,6 @@
 let candidates=[];
 let providerConfig=[];
+let rubricConfig={};
 const labels={},storageKey="jev-lab:runs";
 const sampleResume=c=>c?.[3]||"";
 const escapeHtml=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -38,7 +39,7 @@ function distribution(key,d,rubric){
  return '<div class="detailEmpty">This model returns only the normalized decision for this primitive.</div>';
 }
 function renderComparison(){
- const providers=selectedProviders(),rubric=hydratedRun?.rubric||{},byProvider=hydratedRun?.results?.[active]||{};
+ const providers=selectedProviders(),rubric=hydratedRun?.rubric||rubricConfig||{},byProvider=hydratedRun?.results?.[active]||{};
  const modelHeads=providers.map(p=>`<div class="compareModel"><span>${escapeHtml(providerConfig.find(x=>x.id===p)?.provider||p)}</span><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong></div>`).join("");
  const keys=["technical_depth","primary_profile","llm_experience"];
  const rows=keys.map((key,idx)=>{
@@ -97,3 +98,25 @@ runButton.onclick=async()=>{
   running=false;notice.textContent=error.message;document.querySelector("#resultStatus").textContent="Failed";renderHistory();renderCandidates();renderCandidate();
  }
 };
+
+
+async function boot(){
+ try{
+  const [dr,cr]=await Promise.all([fetch("/api/dataset"),fetch("/api/config")]);
+  if(!dr.ok)throw new Error(`Dataset failed (${dr.status})`);
+  if(!cr.ok)throw new Error(`Config failed (${cr.status})`);
+  const d=await dr.json(),cfg=await cr.json();
+  providerConfig=cfg.providers||[];rubricConfig=d.rubric||{};
+  for(const p of providerConfig)labels[p.id]=p.model;
+  document.querySelector("#modelGrid").innerHTML=providerConfig.map(p=>`<label class="model"><input type="checkbox" data-provider="${p.id}" checked><span><b>${p.provider}</b><strong>${p.model}</strong><small>${p.configured?"Credential configured":"Credential missing"}</small></span></label>`).join("");
+  document.querySelectorAll("[data-provider]").forEach(x=>x.addEventListener("change",renderConfig));
+  candidates=(d.candidates||[]).map(c=>[c.id,c.title,c.description,c.markdown]);
+  document.querySelector("#datasetCount").textContent=`${candidates.length} synthetic candidates`;
+  active=candidates[0]?.[0]||null;
+  renderCandidates();renderConfig();renderHistory();
+ }catch(error){
+  console.error("Boot failed",error);
+  notice.classList.remove("hidden");notice.textContent=`Could not initialize app: ${error.message}`;
+ }
+}
+boot();
