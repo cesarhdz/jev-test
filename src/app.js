@@ -2,7 +2,7 @@ let candidates=[];
 let providerConfig=[];const labels={},storageKey="jev-lab:runs";
 const sampleResume=c=>c[3]||"";
 const list=document.querySelector("#candidateList"),name=document.querySelector("#candidateName"),desc=document.querySelector("#candidateDescription"),preview=document.querySelector("#inputPreview"),comparison=document.querySelector("#comparison"),picker=document.querySelector("#runPicker");
-let active=candidates[0][0],hydratedRun=null;
+let active=null,hydratedRun=null;
 const loadHistory=()=>{try{return JSON.parse(localStorage.getItem(storageKey)||"[]")}catch{return[]}};
 const selectedProviders=()=>hydratedRun?hydratedRun.providers:providerConfig.map(p=>p.id);
 function setProviderChecks(){}
