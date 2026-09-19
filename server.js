@@ -4,7 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root=fileURLToPath(new URL(".",import.meta.url));
-const defaults={TYPESAFE_MODEL:"jev-latest",OPENAI_MODEL:"gpt-5.6-luna",OPENROUTER_MODEL:"google/gemma-4-26b-a4b-it:free"};
+const defaults={TYPESAFE_MODEL:"jev-latest",OPENAI_MODEL:"gpt-5.6-luna",OPENROUTER_MODEL:"qwen/qwen3-reranker-8b"};
 try{
  const raw=await readFile(join(root,".env"),"utf8");
  for(const line of raw.split(/\r?\n/)){
@@ -16,7 +16,7 @@ try{
 const config={providers:[
  {id:"jev",provider:"TypeSafe",model:process.env.TYPESAFE_MODEL||defaults.TYPESAFE_MODEL,configured:Boolean(process.env.TYPESAFE_API_KEY)},
  {id:"openai",provider:"OpenAI",model:process.env.OPENAI_MODEL||defaults.OPENAI_MODEL,configured:Boolean(process.env.OPENAI_API_KEY)},
- {id:"openrouter",provider:"OpenRouter",model:process.env.OPENROUTER_MODEL||defaults.OPENROUTER_MODEL,configured:Boolean(process.env.OPENROUTER_API_KEY)}
+ {id:"openrouter",provider:"OpenRouter · Rerank",model:process.env.OPENROUTER_MODEL||defaults.OPENROUTER_MODEL,configured:Boolean(process.env.OPENROUTER_API_KEY)}
 ]};
 const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8"};
 const json=(res,status,data)=>{res.writeHead(status,{"content-type":"application/json"});res.end(JSON.stringify(data))};
@@ -73,20 +73,50 @@ async function callOpenAI(resume,r){
  const data=JSON.parse(text),parsed=JSON.parse(extractResponseText(data));
  return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.input_tokens??null,outputTokens:data.usage?.output_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
 }
-async function callOpenRouter(resume,r){
- const started=performance.now(),model=config.providers.find(p=>p.id==="openrouter").model;
+function rerankOptions(key,q){
+ if(key==="technical_depth")return (q.criteria||[]).map((text,index)=>({value:index,text:`Level ${index}: ${text}`}));
+ if(key==="primary_profile")return Object.entries(q.criteria||{}).map(([value,text])=>({value,text:`${value}: ${text}`}));
+ if(key==="production_ai_ownership")return [
+   {value:true,text:"True: The resume demonstrates that the candidate personally implemented an LLM-powered capability used in production."},
+   {value:false,text:"False: The resume does not demonstrate personal implementation of an LLM-powered capability used in production."}
+ ];
+ if(key==="recent_hands_on_engineering")return [
+   {value:true,text:"True: The resume demonstrates that the candidate personally implemented and shipped production code within the most recent two years represented by the resume."},
+   {value:false,text:"False: The resume does not demonstrate personal implementation and shipment of production code within the most recent two years represented by the resume."}
+ ];
+ return [];
+}
+async function rerankDecision(resume,key,q,model){
+ const options=rerankOptions(key,q);
+ const query=`Evaluate the resume against this decision contract. Select the answer option most relevant to the evidence.\nQuestion: ${q.question}\nInstructions: ${q.instructions}\n\nResume:\n${resume}`;
  let response,text;
  const delays=[0,2000,5000,10000];
  for(let attempt=0;attempt<delays.length;attempt++){
    if(delays[attempt])await new Promise(resolve=>setTimeout(resolve,delays[attempt]));
-   response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
+   response=await fetch("https://openrouter.ai/api/v1/rerank",{method:"POST",signal:AbortSignal.timeout(30000),headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,query,documents:options.map(x=>x.text),top_n:options.length})});
    text=await response.text();
    if(response.status!==429)break;
-   console.log(`[openrouter:retry] ${model} · attempt ${attempt+1}/${delays.length} · 429`);
+   console.log(`[openrouter:retry] ${model} · ${key} · attempt ${attempt+1}/${delays.length} · 429`);
  }
- if(!response.ok)throw new Error(`OpenRouter ${response.status}: ${text.slice(0,400)}`);
- const data=JSON.parse(text),parsed=JSON.parse(data.choices?.[0]?.message?.content||"{}");
- return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.prompt_tokens??null,outputTokens:data.usage?.completion_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
+ if(!response.ok)throw new Error(`OpenRouter rerank ${response.status}: ${text.slice(0,400)}`);
+ const data=JSON.parse(text),ranked=data.results||[];
+ const scores=Object.fromEntries(ranked.map(x=>[String(options[x.index]?.value),x.relevance_score]));
+ const winner=options[ranked[0]?.index];
+ if(!winner)throw new Error(`OpenRouter rerank returned no result for ${key}`);
+ return {value:winner.value,scores,totalTokens:data.usage?.total_tokens??null,searchUnits:data.usage?.search_units??null,model:data.model||model};
+}
+async function callOpenRouter(resume,r){
+ const started=performance.now(),model=config.providers.find(p=>p.id==="openrouter").model;
+ const entries=await Promise.all(Object.entries(r).map(async([key,q])=>[key,await rerankDecision(resume,key,q,model)]));
+ const ranked=Object.fromEntries(entries),decisions={
+   technical_depth:{score:Number(ranked.technical_depth.value),scores:ranked.technical_depth.scores},
+   primary_profile:{choice:ranked.primary_profile.value,scores:ranked.primary_profile.scores},
+   production_ai_ownership:{value:Boolean(ranked.production_ai_ownership.value),scores:ranked.production_ai_ownership.scores},
+   recent_hands_on_engineering:{value:Boolean(ranked.recent_hands_on_engineering.value),scores:ranked.recent_hands_on_engineering.scores}
+ };
+ const tokenValues=Object.values(ranked).map(x=>x.totalTokens).filter(Number.isFinite);
+ const searchUnits=Object.values(ranked).reduce((sum,x)=>sum+(Number(x.searchUnits)||0),0);
+ return {model:Object.values(ranked)[0]?.model||model,decisions,inputTokens:tokenValues.length?tokenValues.reduce((a,b)=>a+b,0):null,outputTokens:0,latencyMs:Math.round(performance.now()-started),uncertainty:"relevance_scores",calls:4,searchUnits};
 }
 async function evaluate(provider,resume,r){
  try{
