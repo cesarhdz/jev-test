@@ -32,12 +32,18 @@ function jevQuestions(r){
 }
 const profileKeys=["product_manager","technical_product_manager","product_engineer","software_engineer","forward_deployed_engineer","other"];
 const llmSchema={type:"object",additionalProperties:false,required:["technical_depth","primary_profile","llm_experience"],properties:{
- technical_depth:{type:"object",additionalProperties:false,required:["score","confidence","probabilities"],properties:{score:{type:"number",minimum:0,maximum:5},confidence:{type:"number",minimum:0,maximum:1},probabilities:{type:"array",minItems:6,maxItems:6,items:{type:"number",minimum:0,maximum:1}}}},
- primary_profile:{type:"object",additionalProperties:false,required:["choice","confidence","probabilities"],properties:{choice:{type:"string",enum:profileKeys},confidence:{type:"number",minimum:0,maximum:1},probabilities:{type:"object",additionalProperties:false,required:profileKeys,properties:Object.fromEntries(profileKeys.map(k=>[k,{type:"number",minimum:0,maximum:1}]))}}},
- llm_experience:{type:"object",additionalProperties:false,required:["noul"],properties:{noul:{type:"number",minimum:0,maximum:1}}}
+ technical_depth:{type:"number",minimum:0,maximum:5},
+ primary_profile:{type:"string",enum:profileKeys},
+ llm_experience:{type:"boolean"}
 }};
+function sharedQuestions(r){
+ return Object.fromEntries(Object.entries(r).map(([key,q])=>[key,{question:q.question,instructions:q.instructions,criteria:q.criteria}]));
+}
 function promptFor(resume,r){
- return `Evaluate the resume using exactly the rubric below. Return only the structured result. Probabilities and confidence are the model's self-assessed uncertainty and are not calibrated TypeSafe probabilities. technical_depth.probabilities contains six values for score levels 0 through 5. llm_experience.noul is P(true), from 0 to 1.\n\nRUBRIC:\n${JSON.stringify(r,null,2)}\n\nRESUME:\n${resume}`;
+ return `Use the resume as evidence and answer the evaluation contract exactly as written. Do not add explanation.\n\nEVALUATION CONTRACT:\n${JSON.stringify(sharedQuestions(r),null,2)}\n\nRESUME:\n${resume}`;
+}
+function normalizeLlm(parsed){
+ return {technical_depth:{score:parsed.technical_depth},primary_profile:{choice:parsed.primary_profile},llm_experience:{value:parsed.llm_experience}};
 }
 function normalizeJev(data){
  const a=data.answers||{};
@@ -63,14 +69,14 @@ async function callOpenAI(resume,r){
  const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"authorization":`Bearer ${process.env.OPENAI_API_KEY}`,"content-type":"application/json"},body:JSON.stringify({model,store:false,input:promptFor(resume,r),text:{format:{type:"json_schema",name:"resume_decisions",strict:true,schema:llmSchema}}})});
  const text=await response.text();if(!response.ok)throw new Error(`OpenAI ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text),parsed=JSON.parse(extractResponseText(data));
- return {model:data.model||model,decisions:parsed,inputTokens:data.usage?.input_tokens??null,outputTokens:data.usage?.output_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:"self_assessed"};
+ return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.input_tokens??null,outputTokens:data.usage?.output_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
 }
 async function callOpenRouter(resume,r){
  const started=performance.now(),model=config.providers.find(p=>p.id==="openrouter").model;
  const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{"authorization":`Bearer ${process.env.OPENROUTER_API_KEY}`,"content-type":"application/json","x-title":"Jev Lab"},body:JSON.stringify({model,messages:[{role:"user",content:promptFor(resume,r)}],response_format:{type:"json_schema",json_schema:{name:"resume_decisions",strict:true,schema:llmSchema}},provider:{require_parameters:true}})});
  const text=await response.text();if(!response.ok)throw new Error(`OpenRouter ${response.status}: ${text.slice(0,400)}`);
  const data=JSON.parse(text),parsed=JSON.parse(data.choices?.[0]?.message?.content||"{}");
- return {model:data.model||model,decisions:parsed,inputTokens:data.usage?.prompt_tokens??null,outputTokens:data.usage?.completion_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:"self_assessed"};
+ return {model:data.model||model,decisions:normalizeLlm(parsed),inputTokens:data.usage?.prompt_tokens??null,outputTokens:data.usage?.completion_tokens??null,latencyMs:Math.round(performance.now()-started),uncertainty:null};
 }
 async function evaluate(provider,resume,r){
  try{
@@ -99,7 +105,7 @@ const server=http.createServer(async(req,res)=>{
     const r=await rubric(),jobs=candidates.flatMap(c=>providers.map(provider=>({candidateId:c.id,resume:c.markdown,provider})));
     const evaluated=await mapLimit(jobs,3,async job=>({...job,result:await evaluate(job.provider,job.resume,r)}));
     const results={};for(const e of evaluated){results[e.candidateId]??={};results[e.candidateId][e.provider]=e.result}
-    return json(res,200,{results,completedAt:new Date().toISOString()});
+    return json(res,200,{results,completedAt:new Date().toISOString(),rubric:r,models:Object.fromEntries(providers.map(id=>{const p=config.providers.find(x=>x.id===id);return [id,p?.model]}))});
    }catch(error){return json(res,500,{error:error.message})}
  }
  const pathname=path==="/"?"index.html":decodeURIComponent(path||"").replace(/^\/+/, "");
