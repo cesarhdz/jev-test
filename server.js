@@ -22,6 +22,7 @@ const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=
 const json=(res,status,data)=>{res.writeHead(status,{"content-type":"application/json"});res.end(JSON.stringify(data))};
 async function body(req){let raw="";for await(const chunk of req){raw+=chunk;if(raw.length>2_000_000)throw new Error("Request too large")}return JSON.parse(raw||"{}")}
 async function rubric(){return JSON.parse(await readFile(join(root,"experiments","resume","rubric.json"),"utf8"))}
+async function expected(){return JSON.parse(await readFile(join(root,"experiments","resume","expected.json"),"utf8"))}
 
 function jevQuestions(r){
  return Object.fromEntries(Object.entries(r).map(([key,q])=>[key,{
@@ -134,7 +135,7 @@ async function mapLimit(items,limit,fn){
 
 const server=http.createServer(async(req,res)=>{
  const path=req.url?.split("?")[0];
- if(path==="/api/dataset"){try{const base=join(root,"experiments","resume","fixtures");const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));return json(res,200,{candidates,rubric:await rubric()})}catch(error){return json(res,500,{error:error.message})}}
+ if(path==="/api/dataset"){try{const base=join(root,"experiments","resume","fixtures");const manifest=JSON.parse(await readFile(join(base,"manifest.json"),"utf8"));const candidates=await Promise.all(manifest.candidates.map(async c=>({...c,markdown:await readFile(join(base,c.file),"utf8")})));return json(res,200,{candidates,rubric:await rubric(),expected:await expected()})}catch(error){return json(res,500,{error:error.message})}}
  if(path==="/api/config")return json(res,200,config);
  if(path==="/api/status")return json(res,200,{ok:true,providers:Object.fromEntries(config.providers.map(p=>[p.id,p.configured]))});
  if(path==="/api/evaluate"&&req.method==="POST"){
