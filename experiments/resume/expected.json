@@ -1,0 +1,195 @@
+{
+  "_meta": {
+    "status": "draft",
+    "note": "Human ground truth. Review before using for benchmark scoring. Arrays contain acceptable outcomes; technical_depth arrays represent acceptable discrete score levels."
+  },
+  "c01": {
+    "technical_depth": {
+      "expected": [
+        4,
+        5
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "software_engineer"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        true
+      ]
+    }
+  },
+  "c02": {
+    "technical_depth": {
+      "expected": [
+        3,
+        4
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "product_engineer"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        true
+      ]
+    }
+  },
+  "c03": {
+    "technical_depth": {
+      "expected": [
+        0,
+        1
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "product_manager"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        false
+      ]
+    }
+  },
+  "c04": {
+    "technical_depth": {
+      "expected": [
+        1,
+        2
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "technical_product_manager"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        false
+      ]
+    }
+  },
+  "c06": {
+    "technical_depth": {
+      "expected": [
+        3,
+        4
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "forward_deployed_engineer",
+        "product_engineer"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        true
+      ]
+    }
+  },
+  "c07": {
+    "technical_depth": {
+      "expected": [
+        3,
+        4
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "product_engineer",
+        "technical_product_manager"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        true
+      ]
+    }
+  },
+  "c08": {
+    "technical_depth": {
+      "expected": [
+        0,
+        1
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "product_manager",
+        "technical_product_manager"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        false
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        false
+      ]
+    }
+  },
+  "c10": {
+    "technical_depth": {
+      "expected": [
+        2,
+        3,
+        4
+      ]
+    },
+    "primary_profile": {
+      "expected": [
+        "product_engineer",
+        "other"
+      ]
+    },
+    "production_ai_ownership": {
+      "expected": [
+        true
+      ]
+    },
+    "recent_hands_on_engineering": {
+      "expected": [
+        true
+      ]
+    }
+  }
+}
