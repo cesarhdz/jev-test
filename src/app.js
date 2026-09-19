@@ -49,6 +49,7 @@ function expectedValue(key){
  if(typeof x==="boolean")return x?"Yes":"No";
  return titleize(x);
 }
+function expectedReason(key){return expectedConfig?.[active]?.[key]?.reason||""}
 function matchesExpected(key,d){
  const x=expectedConfig?.[active]?.[key]?.expected;if(x==null||!d)return null;
  if(key==="technical_depth"){const n=Number(d.score);return Array.isArray(x)&&n>=x[0]&&n<=x[1]}
@@ -63,7 +64,7 @@ function renderComparison(){
    const q=rubric[key]||{},type=(q.type||["score","choice","noul","noul"][idx]).toUpperCase();
    const expectedCell=`<div class="compareValue expectedValue">${escapeHtml(expectedValue(key))}</div>`;const cells=providers.map(p=>{const saved=byProvider[p];if(saved?.error)return `<div class="compareValue errorValue">Error</div>`;if(running&&!saved)return `<div class="compareValue muted">Running…</div>`;const d=saved?.decisions?.[key],match=matchesExpected(key,d),mark=match==null?"":`<span class="validationMark ${match?"match":"miss"}">${match?"✓":"·"}</span>`;return `<div class="compareValue"><span>${escapeHtml(resultValue(key,d))}</span>${mark}</div>`}).join("");
    const details=providers.map(p=>{const saved=byProvider[p];return `<div class="modelDetail"><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong>${saved?.error?`<p class="providerError">${escapeHtml(saved.error)}</p>`:distribution(key,saved?.decisions?.[key],q)}</div>`}).join("");
-   return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${expectedCell}${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div><div class="expectedDetail"><span class="eyebrow">HUMAN EXPECTED</span><p>${escapeHtml(expectedValue(key))}</p></div>${details}</div></details>`;
+   return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${expectedCell}${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div><div class="expectedDetail"><p>${escapeHtml(expectedReason(key))}</p></div>${details}</div></details>`;
  }).join("");
  const metrics=providers.map(p=>{const x=byProvider[p],extra=x?.calls?` · ${x.calls} calls`:"";return `<div class="metricCell"><b>${x?.latencyMs!=null?`${x.latencyMs} ms`:"—"}</b><span>${x?.inputTokens??"—"} in · ${x?.outputTokens??"—"} out${extra}</span></div>`}).join("");
  comparison.innerHTML=`<div class="compareTable" style="--models:${Math.max(1,providers.length)}"><div class="compareHeader"><div><span class="eyebrow">DECISION</span></div>${modelHeads}</div>${rows}<div class="compareMetrics"><div><span class="eyebrow">PERFORMANCE</span></div><div class="expectedMetric">—</div>${metrics}</div></div>`;
