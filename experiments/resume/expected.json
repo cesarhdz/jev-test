@@ -1,7 +1,7 @@
 {
   "_meta": {
     "status": "draft",
-    "note": "Human ground truth. Review before using for benchmark scoring. Arrays contain acceptable outcomes; technical_depth arrays represent acceptable discrete score levels."
+    "note": "Human ground truth. Review before benchmark scoring. technical_depth is a narrow inclusive [min,max] range; Choice and Noul decisions have exactly one expected value."
   },
   "c01": {
     "technical_depth": {
@@ -11,19 +11,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "software_engineer"
-      ]
+      "expected": "software_engineer"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        true
-      ]
+      "expected": true
     }
   },
   "c02": {
@@ -34,19 +28,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "product_engineer"
-      ]
+      "expected": "product_engineer"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        true
-      ]
+      "expected": true
     }
   },
   "c03": {
@@ -57,19 +45,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "product_manager"
-      ]
+      "expected": "product_manager"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        false
-      ]
+      "expected": false
     }
   },
   "c04": {
@@ -80,19 +62,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "technical_product_manager"
-      ]
+      "expected": "technical_product_manager"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        false
-      ]
+      "expected": false
     }
   },
   "c06": {
@@ -103,20 +79,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "forward_deployed_engineer",
-        "product_engineer"
-      ]
+      "expected": "forward_deployed_engineer"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        true
-      ]
+      "expected": true
     }
   },
   "c07": {
@@ -127,20 +96,13 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "product_engineer",
-        "technical_product_manager"
-      ]
+      "expected": "product_engineer"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        true
-      ]
+      "expected": true
     }
   },
   "c08": {
@@ -151,45 +113,30 @@
       ]
     },
     "primary_profile": {
-      "expected": [
-        "product_manager",
-        "technical_product_manager"
-      ]
+      "expected": "product_manager"
     },
     "production_ai_ownership": {
-      "expected": [
-        false
-      ]
+      "expected": false
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        false
-      ]
+      "expected": false
     }
   },
   "c10": {
     "technical_depth": {
       "expected": [
-        2,
         3,
         4
       ]
     },
     "primary_profile": {
-      "expected": [
-        "product_engineer",
-        "other"
-      ]
+      "expected": "product_engineer"
     },
     "production_ai_ownership": {
-      "expected": [
-        true
-      ]
+      "expected": true
     },
     "recent_hands_on_engineering": {
-      "expected": [
-        true
-      ]
+      "expected": true
     }
   }
 }
