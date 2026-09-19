@@ -1,19 +1,37 @@
 # Daniel Kim
+Seattle, WA · Technical Product Manager
+daniel.kim@example.com | linkedin.com/in/dkim
 
-**Technical Product Manager · Seattle, USA**
+### About
+Technical PM with a solutions-engineering background. Eight years working on developer platforms, enterprise integrations, identity and API products.
 
-Product manager for APIs, identity, and developer platforms.
+### Product Experience
+**RelayCloud | Technical Product Manager, Developer Platform | 2021–Present**
+- Own roadmap for public APIs and webhook infrastructure supporting 600+ customer integrations.
+- Partner with architects on versioning, idempotency, OAuth, rate limits and migration plans.
+- Write API contracts, sequence diagrams and executable request examples.
+- Used SQL and logs to identify integration failures; prioritized changes that reduced related support tickets 31%.
+- Built small Python scripts to validate payloads and reproduce customer issues; production implementation is owned by engineering.
+- Led migration of 180 customers from legacy API keys to OAuth without forced downtime.
 
-## Experience
+### Earlier Technical Roles
+**RelayCloud | Solutions Engineer | 2018–2021**
+- Implemented customer integrations with REST APIs, webhooks and lightweight Python services.
+- Debugged authentication and mapping issues directly with enterprise engineering teams.
+- Built demo environments for sales engineers.
 
-### Selected experience
+**CloudHarbor | Technical Support Engineer | 2016–2018**
+- Investigated API, SSO and networking incidents for enterprise accounts.
+- Wrote internal diagnostic scripts and knowledge-base articles.
 
-- Owns roadmap for public APIs and webhook infrastructure used by more than 600 customer integrations.
-- Works with architects on versioning, idempotency, authentication, rate limits, and migration plans; writes API contracts and executable examples.
-- Used SQL and log analysis to identify integration failure patterns and reduce support tickets by 31%.
-- Built small Python scripts to validate payloads and reproduce customer issues; production implementation remains owned by engineering.
-- Previously implemented customer integrations using REST APIs, webhooks, and lightweight Python services.
+### Technologies
+APIs · OAuth/OIDC · Webhooks · SQL · Python · Postman · OpenAPI · AWS · Datadog
 
-## Skills
+### Product Practice
+Discovery · API lifecycle · Developer experience · Roadmapping · Migration planning · Adoption metrics
 
-API design, OAuth, webhooks, SQL, Python, developer experience, product management.
+### Education
+BS Information Systems, University of Washington, 2016
+
+### Certification
+AWS Certified Cloud Practitioner, 2020
