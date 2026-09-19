@@ -31,10 +31,11 @@ function jevQuestions(r){
  }]));
 }
 const profileKeys=["product_manager","technical_product_manager","product_engineer","software_engineer","forward_deployed_engineer","other"];
-const llmSchema={type:"object",additionalProperties:false,required:["technical_depth","primary_profile","llm_experience"],properties:{
+const llmSchema={type:"object",additionalProperties:false,required:["technical_depth","primary_profile","production_ai_ownership","recent_hands_on_engineering"],properties:{
  technical_depth:{type:"number",minimum:0,maximum:5},
  primary_profile:{type:"string",enum:profileKeys},
- llm_experience:{type:"boolean"}
+ production_ai_ownership:{type:"boolean"},
+ recent_hands_on_engineering:{type:"boolean"}
 }};
 function sharedQuestions(r){
  return Object.fromEntries(Object.entries(r).map(([key,q])=>[key,{question:q.question,instructions:q.instructions,criteria:q.criteria}]));
@@ -43,14 +44,15 @@ function promptFor(resume,r){
  return `Use the resume as evidence and answer the evaluation contract exactly as written. Do not add explanation.\n\nEVALUATION CONTRACT:\n${JSON.stringify(sharedQuestions(r),null,2)}\n\nRESUME:\n${resume}`;
 }
 function normalizeLlm(parsed){
- return {technical_depth:{score:parsed.technical_depth},primary_profile:{choice:parsed.primary_profile},llm_experience:{value:parsed.llm_experience}};
+ return {technical_depth:{score:parsed.technical_depth},primary_profile:{choice:parsed.primary_profile},production_ai_ownership:{value:parsed.production_ai_ownership},recent_hands_on_engineering:{value:parsed.recent_hands_on_engineering}};
 }
 function normalizeJev(data){
  const a=data.answers||{};
  return {model:data.model,decisions:{
   technical_depth:a.technical_depth,
   primary_profile:a.primary_profile,
-  llm_experience:a.llm_experience
+  production_ai_ownership:a.production_ai_ownership,
+  recent_hands_on_engineering:a.recent_hands_on_engineering
  },inputTokens:data.usage?.input_tokens??null,outputTokens:data.usage?.output_tokens??0,uncertainty:"native"};
 }
 function extractResponseText(data){
