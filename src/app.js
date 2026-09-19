@@ -11,7 +11,8 @@ const loadHistory=()=>{try{return JSON.parse(localStorage.getItem(storageKey)||"
 const writeHistory=runs=>localStorage.setItem(storageKey,JSON.stringify(runs.slice(0,100)));
 const selectedProviders=()=>hydratedRun?hydratedRun.providers:[...document.querySelectorAll("[data-provider]:checked")].map(x=>x.dataset.provider);
 function setProviderChecks(ps){document.querySelectorAll("[data-provider]").forEach(x=>x.checked=ps.includes(x.dataset.provider))}
-function renderCandidates(){list.innerHTML="";for(const c of candidates){const b=document.createElement("button");b.className="candidate "+(active===c[0]?"active":"");b.innerHTML=`<span>${c[0].slice(1)}</span><div><strong>${c[1]}</strong><small>${c[2]}</small></div>`;b.onclick=()=>{active=c[0];renderCandidates();renderCandidate()};list.append(b)}}
+function candidateState(id){if(!hydratedRun)return "";const vals=Object.values(hydratedRun.results?.[id]||{});if(vals.some(v=>v?.error))return "error";if(vals.length>=hydratedRun.providers.length)return "done";if(running)return "queued";return ""}
+function renderCandidates(){list.innerHTML="";for(const c of candidates){const state=candidateState(c[0]),b=document.createElement("button");b.className="candidate "+(active===c[0]?"active ":"")+state;b.innerHTML=`<span>${c[0].slice(1)}</span><div><strong>${c[1]}</strong><small>${c[2]}</small></div>${state?`<i class="candidateState">${state==="done"?"✓":state==="error"?"!":"·"}</i>`:""}`;b.onclick=()=>{active=c[0];renderCandidates();renderCandidate()};list.append(b)}}
 
 const pct=n=>Number.isFinite(Number(n))?`${Math.round(Number(n)*100)}%`:"—";
 function bars(entries){return `<div class="probabilities">${entries.map(([label,value])=>`<div class="probRow"><span>${escapeHtml(label)}</span><div><i style="width:${Math.max(0,Math.min(100,Number(value)*100))}%"></i></div><b>${pct(value)}</b></div>`).join("")}</div>`}
@@ -47,7 +48,9 @@ function renderHistory(){const runs=loadHistory(),el=document.querySelector("#hi
 function hydrate(id){const r=loadHistory().find(x=>x.id===id);if(!r)return;closeHistory();hydratedRun=r;setProviderChecks(r.providers);document.querySelector("#hydratedBanner").classList.remove("hidden");document.querySelector("#hydratedLabel").textContent=runLabel(r);document.querySelector("#resultStatus").textContent=r.status==="complete"?"Complete":r.status==="running"?"Running…":"Saved run";runButton.classList.add("hidden");renderConfig();renderHistory()}
 function newRun(){if(running)return;hydratedRun=null;document.querySelector("#hydratedBanner").classList.add("hidden");runButton.classList.remove("hidden");document.querySelector("#resultStatus").textContent="Not run";notice.classList.add("hidden");renderConfig();renderHistory()}
 function createRun(providers){const runs=loadHistory(),inputs=Object.fromEntries(candidates.map(c=>[c[0],sampleResume(c)]));const run={id:crypto.randomUUID(),createdAt:new Date().toISOString(),providers,candidates:candidates.length,status:"running",inputs,results:{}};runs.unshift(run);writeHistory(runs);return run}
-function updateRun(id,patch){const runs=loadHistory(),i=runs.findIndex(r=>r.id===id);if(i<0)return null;runs[i]={...runs[i],...patch};writeHistory(runs);return runs[i]}
+function updateRun(id,patch){const runs=loadHistory(),i=runs.findIndex(r=>r.id===id);if(i<0)return null;runs[i]={...runs[i],...patch};writeHistory(runs);if(hydratedRun?.id===id)hydratedRun=runs[i];return runs[i]}
+function saveEvaluation(runId,candidateId,provider,result,extra={}){const run=loadHistory().find(r=>r.id===runId);if(!run)return;const results={...(run.results||{})};results[candidateId]={...(results[candidateId]||{}),[provider]:result};updateRun(runId,{results,...extra});}
+async function runPool(jobs,limit,fn){let next=0;async function worker(){while(true){const i=next++;if(i>=jobs.length)return;await fn(jobs[i],i)}}await Promise.all(Array.from({length:Math.min(limit,jobs.length)},worker))}
 
 document.querySelector("#clearHistory").onclick=()=>{if(running)return;localStorage.removeItem(storageKey);newRun()};
 document.querySelector("#newRun").onclick=newRun;
@@ -62,25 +65,26 @@ runButton.onclick=async()=>{
  try{
   const statusResponse=await fetch("/api/status"),status=await statusResponse.json(),missing=ps.filter(p=>!status.providers?.[p]);
   if(missing.length){notice.textContent=`Missing credentials for: ${missing.map(p=>labels[p]||p).join(", ")}`;return}
-  const run=createRun(ps);running=true;hydrate(run.id);notice.classList.remove("hidden");notice.textContent=`Running ${candidates.length*ps.length} evaluations…`;document.querySelector("#resultStatus").textContent="Running…";renderCandidate();
-  const response=await fetch("/api/run",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({providers:ps,candidates:candidates.map(c=>({id:c[0],markdown:sampleResume(c)}))})});
-  const data=await response.json();if(!response.ok)throw new Error(data.error||`Run failed (${response.status})`);
-  const hasErrors=Object.values(data.results||{}).some(byProvider=>Object.values(byProvider).some(x=>x.error));
-  updateRun(run.id,{status:hasErrors?"complete_with_errors":"complete",completedAt:data.completedAt,results:data.results,rubric:data.rubric,models:data.models});
-  running=false;hydrate(run.id);document.querySelector("#resultStatus").textContent=hasErrors?"Complete with errors":"Complete";notice.textContent=hasErrors?"Run completed. Some evaluations failed; details are shown in their model columns.":"Run complete. Results saved locally.";
+  const run=createRun(ps),jobs=candidates.flatMap(c=>ps.map(provider=>({candidate:c,provider}))),total=jobs.length;
+  let completed=0,failed=0;running=true;hydrate(run.id);notice.classList.remove("hidden");
+  const progress=()=>{notice.textContent=`Running ${completed} / ${total} evaluations${failed?` · ${failed} failed`:""}…`;document.querySelector("#resultStatus").textContent=`${completed} / ${total}`;renderCandidates();renderCandidate()};
+  progress();
+  await runPool(jobs,3,async job=>{
+    const [id,,,markdown]=job.candidate;
+    let result;
+    try{
+      const response=await fetch("/api/evaluate",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({provider:job.provider,candidate:{id,markdown}})});
+      const text=await response.text();let data;try{data=JSON.parse(text)}catch{throw new Error(`Server returned ${response.status}: ${text.slice(0,180)}`)}
+      if(!response.ok)throw new Error(data.error||`Evaluation failed (${response.status})`);
+      result=data.result;saveEvaluation(run.id,id,job.provider,result,{rubric:data.rubric,models:{...(hydratedRun?.models||{}),[job.provider]:data.model}});
+    }catch(error){result={error:error.message,decisions:{},latencyMs:null,inputTokens:null,outputTokens:null};failed++;saveEvaluation(run.id,id,job.provider,result)}
+    completed++;progress();
+  });
+  running=false;const finalStatus=failed?"complete_with_errors":"complete";updateRun(run.id,{status:finalStatus,completedAt:new Date().toISOString()});hydrate(run.id);
+  document.querySelector("#resultStatus").textContent=failed?"Complete with errors":"Complete";
+  notice.textContent=failed?`Run complete: ${completed-failed} succeeded, ${failed} failed.`:`Run complete: ${completed} evaluations.`;
  }catch(error){
   if(hydratedRun?.id)updateRun(hydratedRun.id,{status:"failed",error:error.message});
-  running=false;notice.textContent=error.message;document.querySelector("#resultStatus").textContent="Failed";renderHistory();renderCandidate();
+  running=false;notice.textContent=error.message;document.querySelector("#resultStatus").textContent="Failed";renderHistory();renderCandidates();renderCandidate();
  }
 };
-
-async function boot(){
- try{
-  const [dr,cr]=await Promise.all([fetch("/api/dataset"),fetch("/api/config")]),d=await dr.json(),cfg=await cr.json();
-  providerConfig=cfg.providers;for(const p of providerConfig)labels[p.id]=p.model;
-  document.querySelector("#modelGrid").innerHTML=providerConfig.map(p=>`<label class="model"><input type="checkbox" data-provider="${p.id}" checked><span><b>${p.provider}</b><strong>${p.model}</strong><small>${p.configured?"Credential configured":"Credential missing"}</small></span></label>`).join("");
-  document.querySelectorAll("[data-provider]").forEach(x=>x.addEventListener("change",renderConfig));
-  candidates=d.candidates.map(c=>[c.id,c.title,c.description,c.markdown]);document.querySelector("#datasetCount").textContent=`${candidates.length} synthetic candidates`;active=candidates[0]?.[0];renderCandidates();renderConfig();renderHistory();
- }catch(error){notice.classList.remove("hidden");notice.textContent=`Could not initialize app: ${error.message}`}
-}
-boot();
