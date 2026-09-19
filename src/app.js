@@ -35,15 +35,15 @@ function distribution(key,d,rubric){
    return `<div class="distribution">${rows.map(([k,v])=>`<div class="distRow"><span>${escapeHtml(rubric?.criteria?.[k]||titleize(k))}</span><b></b><i><em style="width:${Math.max(0,Math.min(100,Number(v)*100))}%"></em></i><strong>${pct(v)}</strong></div>`).join("")}</div>${d.confidence!=null?`<div class="confidence">Confidence: ${pct(d.confidence)}</div>`:""}`;
  }
  const p=d.noul??d.probability;
- if(key==="llm_experience"&&p!=null)return `<div class="distribution"><div class="distRow"><span>True</span><b></b><i><em style="width:${p*100}%"></em></i><strong>${pct(p)}</strong></div><div class="distRow"><span>False</span><b></b><i><em style="width:${(1-p)*100}%"></em></i><strong>${pct(1-p)}</strong></div></div>`;
+ if((key==="production_ai_ownership"||key==="recent_hands_on_engineering")&&p!=null)return `<div class="distribution"><div class="distRow"><span>True</span><b></b><i><em style="width:${p*100}%"></em></i><strong>${pct(p)}</strong></div><div class="distRow"><span>False</span><b></b><i><em style="width:${(1-p)*100}%"></em></i><strong>${pct(1-p)}</strong></div></div>`;
  return '<div class="detailEmpty">This model returns only the normalized decision for this primitive.</div>';
 }
 function renderComparison(){
  const providers=selectedProviders(),rubric=hydratedRun?.rubric||rubricConfig||{},byProvider=hydratedRun?.results?.[active]||{};
  const modelHeads=providers.map(p=>`<div class="compareModel"><span>${escapeHtml(providerConfig.find(x=>x.id===p)?.provider||p)}</span><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong></div>`).join("");
- const keys=["technical_depth","primary_profile","llm_experience"];
+ const keys=["technical_depth","primary_profile","production_ai_ownership","recent_hands_on_engineering"];
  const rows=keys.map((key,idx)=>{
-   const q=rubric[key]||{},type=(q.type||["score","choice","noul"][idx]).toUpperCase();
+   const q=rubric[key]||{},type=(q.type||["score","choice","noul","noul"][idx]).toUpperCase();
    const cells=providers.map(p=>{const saved=byProvider[p];if(saved?.error)return `<div class="compareValue errorValue">Error</div>`;if(running&&!saved)return `<div class="compareValue muted">Running…</div>`;return `<div class="compareValue">${escapeHtml(resultValue(key,saved?.decisions?.[key]))}</div>`}).join("");
    const details=providers.map(p=>{const saved=byProvider[p];return `<div class="modelDetail"><strong>${escapeHtml(byProvider[p]?.model||hydratedRun?.models?.[p]||labels[p]||p)}</strong>${saved?.error?`<p class="providerError">${escapeHtml(saved.error)}</p>`:distribution(key,saved?.decisions?.[key],q)}</div>`}).join("");
    return `<details class="compareDecision" ${idx===0?"open":""}><summary><div class="decisionLabel"><span class="caret">›</span><div><span class="type">${type}</span><h5>${key}</h5><p>${escapeHtml(q.question||"")}</p></div></div>${cells}</summary><div class="decisionDetails"><div class="rubricDetail"><span class="eyebrow">INSTRUCTIONS</span><p>${escapeHtml(q.instructions||"")}</p></div>${details}</div></details>`;
