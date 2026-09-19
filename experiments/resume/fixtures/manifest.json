@@ -25,12 +25,6 @@
       "description": "Technical Product Manager · Seattle, USA"
     },
     {
-      "id": "c05",
-      "file": "05-junior-full-stack.md",
-      "title": "Junior full-stack",
-      "description": "Full-stack Developer · Lisbon, Portugal"
-    },
-    {
       "id": "c06",
       "file": "06-forward-deployed-engineer.md",
       "title": "Forward deployed engineer",
@@ -49,40 +43,10 @@
       "description": "AI Product Manager · San Francisco, USA"
     },
     {
-      "id": "c09",
-      "file": "09-staff-engineer.md",
-      "title": "Staff engineer",
-      "description": "Staff Software Engineer · Stockholm, Sweden"
-    },
-    {
       "id": "c10",
       "file": "10-founder-builder.md",
       "title": "Founder-builder",
       "description": "Founder & Product Builder · Bogotá, Colombia"
-    },
-    {
-      "id": "c11",
-      "file": "11-data-ml-engineer.md",
-      "title": "Data / ML engineer",
-      "description": "Machine Learning Engineer · Berlin, Germany"
-    },
-    {
-      "id": "c12",
-      "file": "12-operations-pm.md",
-      "title": "Operations PM",
-      "description": "Product Manager, Operations · Chicago, USA"
-    },
-    {
-      "id": "c13",
-      "file": "13-spanish-product-engineer.md",
-      "title": "Product engineer (ES)",
-      "description": "Ingeniera de Producto Senior · Madrid, España"
-    },
-    {
-      "id": "c14",
-      "file": "14-german-technical-pm.md",
-      "title": "Technical PM (DE)",
-      "description": "Technischer Produktmanager · Hamburg, Deutschland"
     }
   ]
 }
