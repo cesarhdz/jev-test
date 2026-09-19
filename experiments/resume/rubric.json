@@ -1,1 +1,38 @@
-{"technical_depth":{"type":"score","question":"How much hands-on engineering depth does the candidate demonstrate?","instructions":"Use concrete evidence of what the candidate personally designed, built, tested, debugged, or shipped. Ignore skills lists, titles, and company names. Score demonstrated depth, not years worked.","criteria":["No demonstrated hands-on engineering","Technical collaboration with little evidence of personally building software","Personally shipped scoped production features","Independently designs and builds production features end to end","Owns complex systems, architecture, integrations, data models, and production tradeoffs","Deep specialist or systems-level engineering ownership at significant scale"]},"primary_profile":{"type":"choice","question":"Which profile best describes the candidate based on demonstrated work?","instructions":"Use evidence from work bullets and weight recent experience most heavily. Do not infer from titles alone.","criteria":{"product_manager":"Primarily defines product direction and coordinates delivery.","technical_product_manager":"Product ownership with substantial architecture, API, data, or platform depth.","product_engineer":"Personally moves between product definition and hands-on implementation.","software_engineer":"Primarily owns implementation and technical systems.","forward_deployed_engineer":"Combines engineering with direct stakeholder problem solving and deployment.","other":"None clearly dominates."}},"llm_experience":{"type":"noul","question":"Does the resume demonstrate practical experience using LLMs or coding agents to build production software?","instructions":"Return true only when experience bullets demonstrate practical use of LLMs, agents, evaluations, or AI-assisted implementation. Do not infer from a skills list alone."}}
+{
+  "technical_depth": {
+    "type": "score",
+    "question": "How much hands-on engineering depth does the candidate demonstrate?",
+    "instructions": "Use concrete evidence of what the candidate personally designed, built, tested, debugged, or shipped. Ignore skills lists, titles, and company names. Score demonstrated depth, not years worked.",
+    "criteria": [
+      "No demonstrated hands-on engineering",
+      "Technical collaboration with little evidence of personally building software",
+      "Personally shipped scoped production features",
+      "Independently designs and builds production features end to end",
+      "Owns complex systems, architecture, integrations, data models, and production tradeoffs",
+      "Deep specialist or systems-level engineering ownership at significant scale"
+    ]
+  },
+  "primary_profile": {
+    "type": "choice",
+    "question": "Which profile best describes the candidate based on demonstrated work?",
+    "instructions": "Use evidence from work bullets and weight recent experience most heavily. Do not infer from titles alone.",
+    "criteria": {
+      "product_manager": "Primarily defines product direction and coordinates delivery.",
+      "technical_product_manager": "Product ownership with substantial architecture, API, data, or platform depth.",
+      "product_engineer": "Personally moves between product definition and hands-on implementation.",
+      "software_engineer": "Primarily owns implementation and technical systems.",
+      "forward_deployed_engineer": "Combines engineering with direct stakeholder problem solving and deployment.",
+      "other": "None clearly dominates."
+    }
+  },
+  "production_ai_ownership": {
+    "type": "noul",
+    "question": "Does the resume demonstrate that the candidate personally implemented an LLM-powered capability used in production?",
+    "instructions": "Return true only with evidence of personal implementation of an LLM-powered production capability. Skills lists, workshops, prototypes, hackathons, using ChatGPT, managing an AI product, or using coding agents to build non-AI software are not sufficient on their own."
+  },
+  "recent_hands_on_engineering": {
+    "type": "noul",
+    "question": "Does the resume demonstrate that the candidate personally shipped production code within the last 2 years?",
+    "instructions": "Return true only when the resume provides evidence that the candidate personally implemented and shipped production code within the most recent two years represented by the resume. Do not count code shipped only by their team, architecture ownership without implementation, prototypes, scripts that were not production software, or older engineering experience."
+  }
+}
