@@ -17,17 +17,18 @@ const pct=n=>Number.isFinite(Number(n))?`${Math.round(Number(n)*100)}%`:"—";
 function bars(entries){return `<div class="probabilities">${entries.map(([label,value])=>`<div class="probRow"><span>${escapeHtml(label)}</span><div><i style="width:${Math.max(0,Math.min(100,Number(value)*100))}%"></i></div><b>${pct(value)}</b></div>`).join("")}</div>`}
 function decisionHtml(key,d,uncertainty){
  if(!d)return `<div class="placeholder">No result</div>`;
- const note=uncertainty==="native"?"Native model uncertainty":"Self-assessed by the LLM";
+ const note=uncertainty==="native"?"Native model uncertainty":"";
  if(key==="technical_depth"){
    const probs=Array.isArray(d.probabilities)?d.probabilities.map((v,i)=>[String(i),v]):Object.entries(d.probabilities||{});
-   return `<div class="decisionValue"><strong>${Number(d.score).toFixed(Number.isInteger(d.score)?0:2)} <small>/ 5</small></strong>${d.confidence!=null?`<span>Confidence ${pct(d.confidence)}</span>`:""}</div>${bars(probs)}<small class="uncertainty">${note}</small>`;
+   return `<div class="decisionValue"><strong>${Number(d.score).toFixed(Number.isInteger(d.score)?0:2)} <small>/ 5</small></strong>${d.confidence!=null?`<span>Confidence ${pct(d.confidence)}</span>`:""}</div>${probs.length?bars(probs):""}${note?`<small class="uncertainty">${note}</small>`:""}`;
  }
  if(key==="primary_profile"){
    const probs=Object.entries(d.probabilities||{}).sort((a,b)=>b[1]-a[1]);
-   return `<div class="decisionValue"><strong class="choiceValue">${escapeHtml(d.choice||"—").replaceAll("_"," ")}</strong>${d.confidence!=null?`<span>Confidence ${pct(d.confidence)}</span>`:""}</div>${bars(probs)}<small class="uncertainty">${note}</small>`;
+   return `<div class="decisionValue"><strong class="choiceValue">${escapeHtml(d.choice||"—").replaceAll("_"," ")}</strong>${d.confidence!=null?`<span>Confidence ${pct(d.confidence)}</span>`:""}</div>${probs.length?bars(probs):""}${note?`<small class="uncertainty">${note}</small>`:""}`;
  }
+ if(typeof d.value==="boolean")return `<div class="decisionValue"><strong>${d.value?"Yes":"No"}</strong></div>`;
  const p=d.noul??d.probability??null;
- return `<div class="decisionValue"><strong>${p==null?"—":p>=.5?"Yes":"No"}</strong><span>P(true) ${pct(p)}</span></div>${bars([["true",p],["false",p==null?0:1-p]])}<small class="uncertainty">${note}</small>`;
+ return `<div class="decisionValue"><strong>${p==null?"—":p>=.5?"Yes":"No"}</strong><span>P(true) ${pct(p)}</span></div>${p==null?"":bars([["true",p],["false",1-p]])}${note?`<small class="uncertainty">${note}</small>`:""}`;
 }
 function providerColumn(p){
  const saved=hydratedRun?.results?.[active]?.[p],d=saved?.decisions||{},model=saved?.model||labels[p]||p;
@@ -65,7 +66,7 @@ runButton.onclick=async()=>{
   const response=await fetch("/api/run",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({providers:ps,candidates:candidates.map(c=>({id:c[0],markdown:sampleResume(c)}))})});
   const data=await response.json();if(!response.ok)throw new Error(data.error||`Run failed (${response.status})`);
   const hasErrors=Object.values(data.results||{}).some(byProvider=>Object.values(byProvider).some(x=>x.error));
-  updateRun(run.id,{status:hasErrors?"complete_with_errors":"complete",completedAt:data.completedAt,results:data.results});
+  updateRun(run.id,{status:hasErrors?"complete_with_errors":"complete",completedAt:data.completedAt,results:data.results,rubric:data.rubric,models:data.models});
   running=false;hydrate(run.id);document.querySelector("#resultStatus").textContent=hasErrors?"Complete with errors":"Complete";notice.textContent=hasErrors?"Run completed. Some evaluations failed; details are shown in their model columns.":"Run complete. Results saved locally.";
  }catch(error){
   if(hydratedRun?.id)updateRun(hydratedRun.id,{status:"failed",error:error.message});
