@@ -1,31 +1,34 @@
-# Jev Test
+# Jev Lab
 
-Experiments comparing structured decision models with frontier LLMs.
+Small experiments comparing structured decision models with general-purpose LLMs.
 
 ## Run locally
 
-No bundler and no build step are required. Node serves the browser UI directly.
+No bundler or build step is required.
 
 ```sh
 cp .env.example .env
-# add TYPESAFE_API_KEY to .env
 pnpm start
 ```
 
-Open `http://localhost:3000`.
+API keys remain server-side in `.env`.
 
-For auto-restart while editing:
+## Repository
 
-```sh
-pnpm dev
+```text
+experiments/
+  resume/
+    README.md
+    rubric.json
+    fixtures/
+      manifest.json
+      01-backend-specialist.md
+      ...
+      12-operations-pm.md
+src/
+  app.js
+  style.css
+server.js
 ```
 
-## Experiment 01: Resume sensitivity
-
-The same synthetic candidate is evaluated with a frozen rubric while one signal is changed at a time.
-
-Cases: `baseline`, `no-payments`, `no-ai`, `no-hands-on`, `pm-titles`.
-
-We measure **sensitivity**, **invariance**, **stability**, and **performance** (latency, tokens, cost).
-
-API keys remain server-side in `.env`. The fixtures and rubric are provider-neutral so the same experiment can later run against Jev and frontier models.
+Experiment 01 uses 12 synthetic Markdown resumes and three typed decisions. See `experiments/resume/README.md`.
