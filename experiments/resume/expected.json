@@ -8,16 +8,20 @@
       "expected": [
         4,
         5
-      ]
+      ],
+      "reason": "Owns high-scale backend systems, architecture, schemas, reliability, and production tradeoffs."
     },
     "primary_profile": {
-      "expected": "software_engineer"
+      "expected": "software_engineer",
+      "reason": "Recent work is dominated by hands-on backend implementation and systems ownership."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally implementing an LLM-powered production capability."
     },
     "recent_hands_on_engineering": {
-      "expected": true
+      "expected": true,
+      "reason": "Recent roles explicitly demonstrate personally shipping production backend systems."
     }
   },
   "c02": {
@@ -25,16 +29,20 @@
       "expected": [
         3,
         4
-      ]
+      ],
+      "reason": "Personally ships production features end to end with backend, UI, testing, and AI-assisted engineering."
     },
     "primary_profile": {
-      "expected": "product_engineer"
+      "expected": "product_engineer",
+      "reason": "Moves directly between product definition and hands-on implementation."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "Uses coding agents to build software, but that alone is not a production LLM-powered product capability."
     },
     "recent_hands_on_engineering": {
-      "expected": true
+      "expected": true,
+      "reason": "Recent Product Engineer work explicitly includes personally shipping production code."
     }
   },
   "c03": {
@@ -42,16 +50,20 @@
       "expected": [
         0,
         1
-      ]
+      ],
+      "reason": "Demonstrates technical collaboration and basic SQL, but not personal production software implementation."
     },
     "primary_profile": {
-      "expected": "product_manager"
+      "expected": "product_manager",
+      "reason": "Work centers on product direction, prioritization, metrics, and coordinating delivery."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally implementing an LLM-powered production capability."
     },
     "recent_hands_on_engineering": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally shipping production code in the recent period."
     }
   },
   "c04": {
@@ -59,16 +71,20 @@
       "expected": [
         1,
         2
-      ]
+      ],
+      "reason": "Writes API examples and scripts and works deeply with architecture, while production implementation belongs to engineering."
     },
     "primary_profile": {
-      "expected": "technical_product_manager"
+      "expected": "technical_product_manager",
+      "reason": "Owns product work with substantial API, platform, and architecture depth."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally implementing an LLM-powered production capability."
     },
     "recent_hands_on_engineering": {
-      "expected": false
+      "expected": false,
+      "reason": "The resume explicitly separates technical product work from production implementation."
     }
   },
   "c06": {
@@ -76,16 +92,20 @@
       "expected": [
         3,
         4
-      ]
+      ],
+      "reason": "Personally builds and deploys customer-facing integrations and production solutions with meaningful system ownership."
     },
     "primary_profile": {
-      "expected": "forward_deployed_engineer"
+      "expected": "forward_deployed_engineer",
+      "reason": "Combines hands-on engineering with direct customer problem solving and deployment."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally implementing an LLM-powered production capability."
     },
     "recent_hands_on_engineering": {
-      "expected": true
+      "expected": true,
+      "reason": "Recent work demonstrates personally implementing and deploying production solutions."
     }
   },
   "c07": {
@@ -93,16 +113,20 @@
       "expected": [
         3,
         4
-      ]
+      ],
+      "reason": "Demonstrates recent end-to-end implementation plus architecture and product ownership, without deep specialist-scale evidence."
     },
     "primary_profile": {
-      "expected": "product_engineer"
+      "expected": "product_engineer",
+      "reason": "The strongest pattern is moving between product decisions and personally building the resulting software."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally implementing an LLM-powered production capability."
     },
     "recent_hands_on_engineering": {
-      "expected": true
+      "expected": true,
+      "reason": "Recent work demonstrates personally shipping production software."
     }
   },
   "c08": {
@@ -110,16 +134,20 @@
       "expected": [
         0,
         1
-      ]
+      ],
+      "reason": "Owns AI product direction and technical collaboration, but does not demonstrate personally building production software."
     },
     "primary_profile": {
-      "expected": "product_manager"
+      "expected": "product_manager",
+      "reason": "Work is primarily product strategy, discovery, prioritization, and delivery for AI products."
     },
     "production_ai_ownership": {
-      "expected": false
+      "expected": false,
+      "reason": "Managing an AI product is not evidence of personally implementing its LLM capability."
     },
     "recent_hands_on_engineering": {
-      "expected": false
+      "expected": false,
+      "reason": "No evidence of personally shipping production code in the recent period."
     }
   },
   "c10": {
@@ -127,16 +155,20 @@
       "expected": [
         3,
         4
-      ]
+      ],
+      "reason": "Personally builds production product features and systems, with broad end-to-end ownership but limited specialist-scale evidence."
     },
     "primary_profile": {
-      "expected": "product_engineer"
+      "expected": "product_engineer",
+      "reason": "Combines product definition, customer discovery, and direct implementation as a founder-builder."
     },
     "production_ai_ownership": {
-      "expected": true
+      "expected": true,
+      "reason": "The resume demonstrates personal implementation of an LLM-powered capability used in production."
     },
     "recent_hands_on_engineering": {
-      "expected": true
+      "expected": true,
+      "reason": "Recent founder-builder work demonstrates personally shipping production code."
     }
   }
 }
