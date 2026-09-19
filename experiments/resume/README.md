@@ -4,7 +4,7 @@ Compare structured decisions from multiple models over a small, varied synthetic
 
 ## Dataset
 
-`fixtures/` contains 12 synthetic resumes as Markdown. They vary by seniority, role shape, engineering depth, product ownership, customer exposure, and practical LLM experience.
+`fixtures/` contains 14 synthetic resumes as Markdown. They vary by seniority, role shape, engineering depth, product ownership, customer exposure, and practical LLM experience. The dataset also includes Spanish and German resumes to test whether the same English evaluation contract remains stable across input languages.
 
 `manifest.json` contains display metadata for the UI. The Markdown file is the actual model input and human-readable source of truth.
 
